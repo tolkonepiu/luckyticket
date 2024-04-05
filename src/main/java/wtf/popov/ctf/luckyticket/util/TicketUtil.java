@@ -2,12 +2,8 @@ package wtf.popov.ctf.luckyticket.util;
 
 import wtf.popov.ctf.luckyticket.random.GoRandom;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.LongStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TicketUtil {
 
@@ -15,11 +11,11 @@ public class TicketUtil {
 
     public static final GoRandom random = new GoRandom();
 
-    public static Instant getServerTimeWithMillisByTicketNumber(String ticketNumber, Instant serverTime) {
-        Instant startTime = serverTime.minusSeconds(5);
-        Instant endTime = serverTime.plusSeconds(5);
-        for (Instant t = startTime; t.isBefore(endTime); t = t.plus(1L, ChronoUnit.MILLIS)) {
-            if (ticketNumber.equals(generateTicketNumberByInstant(t))) {
+    public static long getServerTimeWithMillisByTicketNumber(String ticketNumber, long serverTime) {
+        long startTime = serverTime - 5000L;
+        long endTime = serverTime + 5000L;
+        for (long t = startTime; t < endTime; t++) {
+            if (ticketNumber.equals(generateTicketNumberByEpochMillis(t))) {
                 return t;
             }
         }
@@ -27,22 +23,18 @@ public class TicketUtil {
         throw new IllegalArgumentException("No ticket was found for this time period");
     }
 
-    public static List<Instant> generateNextLuckyTimes() {
-        return generateNextLuckyTimes(Duration.ofSeconds(10L).toMillis());
-    }
+    public static List<Long> generateNextLuckyTimes(int count) {
+        List<Long> luckyTimes = new ArrayList<>(count);
+        long time = System.currentTimeMillis() + 1000L;
 
-    public static List<Instant> generateNextLuckyTimes(long millis) {
-        long time = System.currentTimeMillis();
-
-        return LongStream.range(time, time + millis)
-                .parallel()
-                .filter(value -> {
-                    String ticketNumber = generateTicketNumberByEpochMillis(value);
-                    return isTicketLucky(ticketNumber);
-                })
-                .sorted()
-                .mapToObj(Instant::ofEpochMilli)
-                .collect(Collectors.toList());
+        while (luckyTimes.size() < count) {
+            String ticketNumber = generateTicketNumberByEpochMillis(time);
+            if (isTicketLucky(ticketNumber)) {
+                luckyTimes.add(time);
+            }
+            time++;
+        }
+        return luckyTimes;
     }
 
     public static boolean isTicketLucky(String ticketNumber) {
@@ -58,10 +50,6 @@ public class TicketUtil {
             secondSum += Character.getNumericValue(ticketNumber.charAt(i + 3));
         }
         return firstSum == secondSum;
-    }
-
-    public static String generateTicketNumberByInstant(Instant instant) {
-        return generateTicketNumberByEpochMillis(instant.toEpochMilli());
     }
 
     public static String generateTicketNumberByEpochMillis(long epochMillis) {

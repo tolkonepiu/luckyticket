@@ -1,9 +1,6 @@
 package wtf.popov.ctf.luckyticket.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import wtf.popov.ctf.luckyticket.model.EatTicket;
-import wtf.popov.ctf.luckyticket.model.Ticket;
-import wtf.popov.ctf.luckyticket.model.User;
 import lombok.SneakyThrows;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
@@ -13,9 +10,14 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Form;
 import org.apache.http.client.fluent.Request;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.util.EntityUtils;
+import wtf.popov.ctf.luckyticket.model.EatTicket;
+import wtf.popov.ctf.luckyticket.model.Ticket;
+import wtf.popov.ctf.luckyticket.model.User;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -28,22 +30,32 @@ public class LuckyTicketHttpClient implements LuckyTicketClient {
 
     private final String password;
 
-    private final Executor executor = Executor.newInstance(
-
-            HttpClientBuilder.create()
-                    .setDefaultRequestConfig(
-                            RequestConfig.custom()
-                                    .setCookieSpec(CookieSpecs.STANDARD)
-                                    .build()
-                    )
-                    .build()
-
-    );
+    private final Executor executor;
 
     public LuckyTicketHttpClient(String serverUrl, String username, String password) {
         this.serverUrl = serverUrl;
         this.username = username;
         this.password = password;
+
+        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
+        connectionManager.setMaxTotal(10);
+        connectionManager.setDefaultMaxPerRoute(10);
+
+        this.executor = Executor.newInstance(
+
+                HttpClientBuilder.create()
+                        .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
+                        .setConnectionManager(connectionManager)
+                        .disableContentCompression()
+                        .disableAutomaticRetries()
+                        .setDefaultRequestConfig(
+                                RequestConfig.custom()
+                                        .setCookieSpec(CookieSpecs.STANDARD)
+                                        .build()
+                        )
+                        .build()
+
+        );
     }
 
     @Override
@@ -107,7 +119,7 @@ public class LuckyTicketHttpClient implements LuckyTicketClient {
                 ZonedDateTime.parse(
                         httpResponse.getFirstHeader(HttpHeaders.DATE).getValue(),
                         DateTimeFormatter.RFC_1123_DATE_TIME
-                ).toInstant()
+                ).toInstant().toEpochMilli()
         );
         response.setData(
                 new ObjectMapper().readValue(
