@@ -28,9 +28,13 @@ public class TicketUtil {
     }
 
     public static List<Instant> generateNextLuckyTimes() {
+        return generateNextLuckyTimes(Duration.ofSeconds(10L).toMillis());
+    }
+
+    public static List<Instant> generateNextLuckyTimes(long millis) {
         long time = System.currentTimeMillis();
 
-        return LongStream.range(time, time + Duration.ofSeconds(10L).toMillis())
+        return LongStream.range(time, time + millis)
                 .parallel()
                 .filter(value -> {
                     String ticketNumber = generateTicketNumberByEpochMillis(value);
