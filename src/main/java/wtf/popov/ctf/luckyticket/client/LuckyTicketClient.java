@@ -1,6 +1,7 @@
 package wtf.popov.ctf.luckyticket.client;
 
 import wtf.popov.ctf.luckyticket.model.EatTicket;
+import wtf.popov.ctf.luckyticket.model.Interview;
 import wtf.popov.ctf.luckyticket.model.Ticket;
 import wtf.popov.ctf.luckyticket.model.User;
 
@@ -14,6 +15,6 @@ public interface LuckyTicketClient {
 
     Response<EatTicket> eatTicket(int id);
 
-    String getFlag();
+    Response<Interview> interview();
 
 }

@@ -16,6 +16,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.util.EntityUtils;
 import wtf.popov.ctf.luckyticket.model.EatTicket;
+import wtf.popov.ctf.luckyticket.model.Interview;
 import wtf.popov.ctf.luckyticket.model.Ticket;
 import wtf.popov.ctf.luckyticket.model.User;
 
@@ -94,9 +95,10 @@ public class LuckyTicketHttpClient implements LuckyTicketClient {
     }
 
     @Override
-    // TODO
-    public String getFlag() {
-        return null;
+    public Response<Interview> interview() {
+        Request request = Request.Post(serverUrl + "/api/interview");
+
+        return execute(request, Interview.class);
     }
 
     @SneakyThrows

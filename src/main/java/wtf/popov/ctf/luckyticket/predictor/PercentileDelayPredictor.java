@@ -1,5 +1,7 @@
 package wtf.popov.ctf.luckyticket.predictor;
 
+import com.google.common.math.Quantiles;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,7 +9,7 @@ public class PercentileDelayPredictor implements DelayPredictor {
 
     private final List<Long> latencies = new ArrayList<>(100);
 
-    private final double percentile;
+    private final int percentile;
 
     public PercentileDelayPredictor(int percentile) {
         this.percentile = percentile;
@@ -16,12 +18,12 @@ public class PercentileDelayPredictor implements DelayPredictor {
     @Override
     public long nextDelay(long currentDelay) {
         latencies.add(currentDelay);
-        int index = (int) Math.ceil(percentile / 100.0 * latencies.size());
-        return latencies.get(index - 1);
+        return Math.round(Quantiles.percentiles().index(percentile).compute(latencies));
     }
 
     @Override
     public void reset() {
         latencies.clear();
     }
+
 }

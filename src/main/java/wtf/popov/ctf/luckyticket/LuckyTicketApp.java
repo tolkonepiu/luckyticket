@@ -6,10 +6,11 @@ import wtf.popov.ctf.luckyticket.client.LuckyTicketClient;
 import wtf.popov.ctf.luckyticket.client.LuckyTicketHttpClient;
 import wtf.popov.ctf.luckyticket.client.Response;
 import wtf.popov.ctf.luckyticket.model.EatTicket;
+import wtf.popov.ctf.luckyticket.model.Interview;
 import wtf.popov.ctf.luckyticket.model.Ticket;
 import wtf.popov.ctf.luckyticket.model.User;
 import wtf.popov.ctf.luckyticket.predictor.DelayPredictor;
-import wtf.popov.ctf.luckyticket.predictor.FrequentDelayPredictor;
+import wtf.popov.ctf.luckyticket.predictor.PercentileDelayPredictor;
 import wtf.popov.ctf.luckyticket.sleeper.LoopSleeper;
 import wtf.popov.ctf.luckyticket.sleeper.Sleeper;
 import wtf.popov.ctf.luckyticket.util.TicketUtil;
@@ -26,7 +27,7 @@ public class LuckyTicketApp {
 
     private final Sleeper sleeper = new LoopSleeper();
 
-    private final DelayPredictor delayPredictor = new FrequentDelayPredictor();
+    private final DelayPredictor delayPredictor = new PercentileDelayPredictor(50);
 
     private long clientServerDelay = 0;
 
@@ -65,11 +66,15 @@ public class LuckyTicketApp {
             eatLuckyTickets(luckyTicketIds);
 
             user = client.getUserInfo().getData();
-            log.info("User balance {}, luck {}%, conversion {}%",
+            log.info("User balance {}, luck {}%",
                     user.getBalance(),
-                    user.getLuck(),
-                    Math.round((luckyTicketIds.size() * 100.0) / ticketCount)
+                    user.getLuck()
             );
+        }
+
+        if (user.isFullOfLack()) {
+            Interview interview = client.interview().getData();
+            log.info("Congratulations! Your flag: {}", interview.getFlag());
         }
     }
 
@@ -93,24 +98,24 @@ public class LuckyTicketApp {
                         ticket.getNumber(),
                         ticketResponse.getServerTime()
                 );
-                long actualServerDelay = finalServerTime - clientTimeBeforeRequest;
+
+                clientServerDelay = delayPredictor.nextDelay(
+                        finalServerTime - clientTimeBeforeRequest
+                );
 
                 if (!ticket.isLucky()) {
                     log.info(
-                            "FAILED: Ticket {} is not lucky, diff {}ms, delay diff {}ms",
+                            "FAILED: Ticket {} is not lucky, diff {}ms",
                             ticket.getNumber(),
-                            nextLuckyTime - finalServerTime,
-                            actualServerDelay - clientServerDelay
+                            nextLuckyTime - finalServerTime
                     );
                     continue;
                 }
                 log.info(
-                        "SUCCESS: Ticket {} is lucky, diff {}ms, delay diff {}ms",
+                        "SUCCESS: Ticket {} is lucky, diff {}ms",
                         ticket.getNumber(),
-                        nextLuckyTime - finalServerTime,
-                        actualServerDelay - clientServerDelay
+                        nextLuckyTime - finalServerTime
                 );
-                clientServerDelay = delayPredictor.nextDelay(actualServerDelay);
                 luckyTicketIds.add(ticket.getId());
             }
         }

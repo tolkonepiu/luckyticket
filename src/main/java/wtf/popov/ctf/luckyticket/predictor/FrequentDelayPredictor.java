@@ -6,7 +6,7 @@ import java.util.Map;
 
 public class FrequentDelayPredictor implements DelayPredictor {
 
-    private final Map<Long, Integer> delayCounters = new HashMap<>();
+    private final Map<Long, Integer> delayCounters = new HashMap<>(100);
 
     @Override
     public long nextDelay(long currentDelay) {
@@ -22,4 +22,5 @@ public class FrequentDelayPredictor implements DelayPredictor {
     public void reset() {
         delayCounters.clear();
     }
+
 }

@@ -24,15 +24,19 @@ public class TicketUtil {
     }
 
     public static List<Long> generateNextLuckyTimes(int count) {
+        return generateNextLuckyTimes(count, 1000L, 1L);
+    }
+
+    public static List<Long> generateNextLuckyTimes(int count, long startDelay, long timeInterval) {
         List<Long> luckyTimes = new ArrayList<>(count);
-        long time = System.currentTimeMillis() + 1000L;
+        long time = System.currentTimeMillis() + startDelay;
 
         while (luckyTimes.size() < count) {
             String ticketNumber = generateTicketNumberByEpochMillis(time);
             if (isTicketLucky(ticketNumber)) {
                 luckyTimes.add(time);
             }
-            time++;
+            time += timeInterval;
         }
         return luckyTimes;
     }

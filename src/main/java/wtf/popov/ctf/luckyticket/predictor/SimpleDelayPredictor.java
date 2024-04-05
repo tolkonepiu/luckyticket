@@ -10,4 +10,5 @@ public class SimpleDelayPredictor implements DelayPredictor {
     public void reset() {
 
     }
+
 }
