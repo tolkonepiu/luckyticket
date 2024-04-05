@@ -104,7 +104,7 @@ public class LuckyTicketApp {
                 );
 
                 if (!ticket.isLucky()) {
-                    log.info(
+                    log.error(
                             "FAILED: Ticket {} is not lucky, diff {}ms",
                             ticket.getNumber(),
                             nextLuckyTime - finalServerTime
@@ -127,7 +127,7 @@ public class LuckyTicketApp {
     public void eatLuckyTickets(List<Integer> luckyTicketIds) {
         for (int luckyTicketId : luckyTicketIds) {
             EatTicket eatTicket = client.eatTicket(luckyTicketId).getData();
-            log.info("Ticket {} was eaten", eatTicket.getTicket());
+            log.debug("Ticket {} was eaten", eatTicket.getTicket());
         }
     }
 }

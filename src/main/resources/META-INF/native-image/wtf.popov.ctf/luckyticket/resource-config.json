@@ -1,0 +1,13 @@
+{
+  "resources": {
+    "includes": [
+      {
+        "pattern": "natives/.*"
+      },
+      {
+        "pattern": "logback.xml"
+      }
+    ]
+  },
+  "bundles": []
+}

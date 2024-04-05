@@ -12,8 +12,8 @@ public class TicketUtil {
     public static final GoRandom random = new GoRandom();
 
     public static long getServerTimeWithMillisByTicketNumber(String ticketNumber, long serverTime) {
-        long startTime = serverTime - 5000L;
-        long endTime = serverTime + 5000L;
+        long startTime = serverTime - 1000L;
+        long endTime = serverTime + 1000L;
         for (long t = startTime; t < endTime; t++) {
             if (ticketNumber.equals(generateTicketNumberByEpochMillis(t))) {
                 return t;
