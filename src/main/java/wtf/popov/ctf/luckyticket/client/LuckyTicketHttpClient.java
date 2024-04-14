@@ -106,7 +106,11 @@ public class LuckyTicketHttpClient implements LuckyTicketClient {
         HttpResponse response = executor.execute(request).returnResponse();
 
         if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-            throw new HttpResponseException(response.getStatusLine().getStatusCode(), "Invalid status code, expected 200 OK");
+            throw new HttpResponseException(
+                    request,
+                    response.getStatusLine().getStatusCode(),
+                    "Invalid status code, expected 200 OK"
+            );
         }
 
         return response;

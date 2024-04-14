@@ -6,9 +6,4 @@ public class SimpleDelayPredictor implements DelayPredictor {
         return currentDelay;
     }
 
-    @Override
-    public void reset() {
-
-    }
-
 }

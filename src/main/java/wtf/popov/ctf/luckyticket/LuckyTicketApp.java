@@ -9,8 +9,7 @@ import wtf.popov.ctf.luckyticket.model.EatTicket;
 import wtf.popov.ctf.luckyticket.model.Interview;
 import wtf.popov.ctf.luckyticket.model.Ticket;
 import wtf.popov.ctf.luckyticket.model.User;
-import wtf.popov.ctf.luckyticket.predictor.DelayPredictor;
-import wtf.popov.ctf.luckyticket.predictor.PercentileDelayPredictor;
+import wtf.popov.ctf.luckyticket.predictor.*;
 import wtf.popov.ctf.luckyticket.sleeper.LoopSleeper;
 import wtf.popov.ctf.luckyticket.sleeper.Sleeper;
 import wtf.popov.ctf.luckyticket.util.TicketUtil;
@@ -27,7 +26,7 @@ public class LuckyTicketApp {
 
     private final Sleeper sleeper = new LoopSleeper();
 
-    private final DelayPredictor delayPredictor = new PercentileDelayPredictor(50);
+    private final DelayPredictor delayPredictor = new CompositeDelayPredictor();
 
     private long clientServerDelay = 0;
 
@@ -83,8 +82,7 @@ public class LuckyTicketApp {
 
         List<Long> luckyTimes = TicketUtil.generateNextLuckyTimes(count);
 
-        for (int id = 0; id < luckyTimes.size(); id++) {
-            long nextLuckyTime = luckyTimes.get(id);
+        for (long nextLuckyTime : luckyTimes) {
             long nextExecutionTime = nextLuckyTime - clientServerDelay;
 
             if (nextExecutionTime > System.currentTimeMillis()) {
@@ -96,7 +94,8 @@ public class LuckyTicketApp {
 
                 long finalServerTime = TicketUtil.getServerTimeWithMillisByTicketNumber(
                         ticket.getNumber(),
-                        ticketResponse.getServerTime()
+                        clientTimeBeforeRequest,
+                        ticketResponse.getServerTime() + 1000L
                 );
 
                 clientServerDelay = delayPredictor.nextDelay(
@@ -119,7 +118,6 @@ public class LuckyTicketApp {
                 luckyTicketIds.add(ticket.getId());
             }
         }
-        delayPredictor.reset();
 
         return luckyTicketIds;
     }

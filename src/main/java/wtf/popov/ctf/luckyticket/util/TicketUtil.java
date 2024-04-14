@@ -2,8 +2,8 @@ package wtf.popov.ctf.luckyticket.util;
 
 import wtf.popov.ctf.luckyticket.random.GoRandom;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class TicketUtil {
 
@@ -11,10 +11,8 @@ public class TicketUtil {
 
     public static final GoRandom random = new GoRandom();
 
-    public static long getServerTimeWithMillisByTicketNumber(String ticketNumber, long serverTime) {
-        long startTime = serverTime - 1000L;
-        long endTime = serverTime + 1000L;
-        for (long t = startTime; t < endTime; t++) {
+    public static long getServerTimeWithMillisByTicketNumber(String ticketNumber, long startTime, long endTime) {
+        for (long t = startTime; t <= endTime; t++) {
             if (ticketNumber.equals(generateTicketNumberByEpochMillis(t))) {
                 return t;
             }
@@ -28,17 +26,15 @@ public class TicketUtil {
     }
 
     public static List<Long> generateNextLuckyTimes(int count, long startDelay, long timeInterval) {
-        List<Long> luckyTimes = new ArrayList<>(count);
-        long time = System.currentTimeMillis() + startDelay;
-
-        while (luckyTimes.size() < count) {
-            String ticketNumber = generateTicketNumberByEpochMillis(time);
-            if (isTicketLucky(ticketNumber)) {
-                luckyTimes.add(time);
-            }
-            time += timeInterval;
-        }
-        return luckyTimes;
+        return Stream.iterate(System.currentTimeMillis() + startDelay, i -> i + timeInterval)
+                .parallel()
+                .filter(time -> {
+                    String ticketNumber = generateTicketNumberByEpochMillis(time);
+                    return isTicketLucky(ticketNumber);
+                })
+                .limit(count)
+                .sorted()
+                .toList();
     }
 
     public static boolean isTicketLucky(String ticketNumber) {

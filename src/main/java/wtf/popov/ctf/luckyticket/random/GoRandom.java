@@ -12,7 +12,7 @@ public class GoRandom {
         loadNative();
     }
 
-    public static final NativeRandom RANDOM = Native.load(NativeRandom.class);
+    public static final NativeRandom GO_RANDOM = Native.load(NativeRandom.class);
 
     public interface NativeRandom extends Library {
 
@@ -21,7 +21,7 @@ public class GoRandom {
     }
 
     public int random(int n, long seed) {
-        return RANDOM.Random(n, seed);
+        return GO_RANDOM.Random(n, seed);
     }
 
     @SneakyThrows

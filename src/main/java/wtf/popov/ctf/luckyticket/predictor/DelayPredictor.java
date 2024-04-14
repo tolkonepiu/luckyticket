@@ -4,6 +4,4 @@ public interface DelayPredictor {
 
     long nextDelay(long currentDelay);
 
-    void reset();
-
 }

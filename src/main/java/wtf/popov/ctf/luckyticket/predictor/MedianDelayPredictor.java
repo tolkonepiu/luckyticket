@@ -2,28 +2,32 @@ package wtf.popov.ctf.luckyticket.predictor;
 
 import com.google.common.math.Quantiles;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedList;
 
 public class MedianDelayPredictor implements DelayPredictor {
-    private final List<Long> latencies = new ArrayList<>(100);
+    private final LinkedList<Long> latencies = new LinkedList<>();
 
-    @Override
-    public long nextDelay(long currentDelay) {
-        latencies.add(currentDelay);
-        return Math.round(
-                Quantiles.median()
-                        .compute(
-                                latencies.stream()
-                                        .mapToInt(Long::intValue)
-                                        .toArray()
-                        )
-        );
+    private final int maxSize;
+
+    public MedianDelayPredictor() {
+        this(10);
+    }
+
+    public MedianDelayPredictor(int maxSize) {
+        this.maxSize = maxSize;
     }
 
     @Override
-    public void reset() {
-        latencies.clear();
+    public long nextDelay(long currentDelay) {
+        if (!latencies.isEmpty() && latencies.size() >= maxSize) {
+            latencies.removeFirst();
+        }
+
+        latencies.add(currentDelay);
+        return Math.round(
+                Quantiles.median()
+                        .compute(latencies)
+        );
     }
 
 }

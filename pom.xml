@@ -4,7 +4,7 @@
 
     <groupId>wtf.popov.ctf</groupId>
     <artifactId>luckyticket</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.0.1</version>
     <packaging>jar</packaging>
 
     <name>luckyticket</name>
@@ -14,11 +14,42 @@
         <maven.compiler.target>21</maven.compiler.target>
         <maven.compiler.source>21</maven.compiler.source>
         <native.maven.plugin.version>0.10.1</native.maven.plugin.version>
+        <maven.exec.plugin.version>3.2.0</maven.exec.plugin.version>
         <mainClass>wtf.popov.ctf.luckyticket.LuckyTicketApp</mainClass>
         <imageName>luckyticket</imageName>
     </properties>
 
     <profiles>
+        <profile>
+            <id>binaries</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>${maven.exec.plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>binaries</id>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <executable>make</executable>
+                                    <arguments>
+                                        <argument>
+                                            BINARIES_PATH=${project.basedir}/src/main/resources/natives
+                                        </argument>
+                                    </arguments>
+                                    <workingDirectory>${project.basedir}/go_random</workingDirectory>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <profile>
             <id>native</id>
             <build>
@@ -36,13 +67,6 @@
                                 </goals>
                                 <phase>package</phase>
                             </execution>
-<!--                            <execution>-->
-<!--                                <id>test-native</id>-->
-<!--                                <goals>-->
-<!--                                    <goal>test</goal>-->
-<!--                                </goals>-->
-<!--                                <phase>test</phase>-->
-<!--                            </execution>-->
                         </executions>
                         <configuration>
                             <fallback>false</fallback>
@@ -51,9 +75,6 @@
                             </buildArgs>
                             <agent>
                                 <enabled>true</enabled>
-<!--                                <options>-->
-<!--                                    <option>experimental-class-loader-support</option>-->
-<!--                                </options>-->
                             </agent>
                         </configuration>
                     </plugin>
@@ -106,9 +127,9 @@
         </dependency>
 
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>3.8.1</version>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.10.2</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -194,6 +215,8 @@
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
+                    <finalName>${imageName}</finalName>
+                    <appendAssemblyId>false</appendAssemblyId>
                 </configuration>
             </plugin>
         </plugins>
